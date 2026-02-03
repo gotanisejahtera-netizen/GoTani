@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   title: "GoTani - Sustainable Agriculture Platform",
   description:
     "Connect farmers with distributors. Transparent pricing, reduced food loss, and sustainable agriculture.",
-  generator: "v0.app",
   icons: {
     icon: [
       {

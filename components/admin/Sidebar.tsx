@@ -8,8 +8,6 @@ import { translations } from '@/lib/translations'
 
 const links = [
   { href: "/admin", label: "Overview" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/settings", label: "Settings" },
 ]
 
 export default function Sidebar() {

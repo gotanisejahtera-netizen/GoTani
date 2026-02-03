@@ -229,7 +229,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest from Admin (DB) */}
+      {/* Latest from Admin (DB)
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
@@ -254,7 +254,7 @@ export default function Home() {
             )}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </main>

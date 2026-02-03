@@ -29,6 +29,7 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [errors, setErrors] = useState<{price?:string, region?:string}>({})
+  const [urlInput, setUrlInput] = useState('')
 
   async function save(){
     // validate client-side
@@ -75,8 +76,18 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
     if (!file) return
     setUploading(true)
     try{
-      const buf = await file.arrayBuffer()
-      const base64 = Buffer.from(buf).toString('base64')
+      // Browser-friendly conversion to base64 (avoid Node Buffer in client)
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const result = reader.result as string
+          // result is data:[<mediatype>][;base64],<data>
+          const parts = result.split(',')
+          resolve(parts[1] ?? '')
+        }
+        reader.onerror = (err) => reject(err)
+        reader.readAsDataURL(file)
+      })
       const filename = `${Date.now()}-${file.name}`
       const res = await fetch('/api/admin/upload', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ filename, data: base64 }) })
       const json = await res.json()
@@ -90,6 +101,18 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
 
   function removeImage(idx: number){
     setImages((prev)=> prev.filter((_,i)=> i !== idx))
+  }
+
+  function moveImage(idx: number, dir: -1 | 1){
+    setImages(prev => {
+      const arr = [...prev]
+      const to = idx + dir
+      if (to < 0 || to >= arr.length) return arr
+      const tmp = arr[to]
+      arr[to] = arr[idx]
+      arr[idx] = tmp
+      return arr
+    })
   }
 
   async function addImageByUrl(url: string){
@@ -150,16 +173,32 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
           <div>
             <label className="block text-sm font-medium mb-1">Images (upload multiple or add URL)</label>
             <div className="mb-2 flex gap-2 flex-wrap">
+              {images.length === 0 && (
+                <div className="text-sm text-muted">No images added yet.</div>
+              )}
               {images.map((src, idx) => (
-                <div key={idx} className="relative w-20 h-20 bg-muted rounded overflow-hidden">
+                <div key={idx} className="relative w-28 h-28 bg-muted rounded overflow-hidden border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={src} alt={`img-${idx}`} className="w-full h-full object-cover" />
-                  <button onClick={()=>removeImage(idx)} className="absolute top-1 right-1 bg-black/40 text-white rounded-full p-1 text-xs">×</button>
+                  <div className="absolute top-1 left-1 flex gap-1">
+                    <button aria-label="move left" onClick={()=>moveImage(idx, -1)} className="bg-black/40 text-white rounded p-1 text-xs">◀</button>
+                    <button aria-label="move right" onClick={()=>moveImage(idx, 1)} className="bg-black/40 text-white rounded p-1 text-xs">▶</button>
+                  </div>
+                  <button aria-label="remove image" onClick={()=>removeImage(idx)} className="absolute top-1 right-1 bg-black/40 text-white rounded-full p-1 text-xs">×</button>
                 </div>
               ))}
             </div>
-            <input className="w-full border rounded px-3 py-2 mb-2" placeholder="Add image URL and press Enter" onKeyDown={(e)=>{ if (e.key === 'Enter'){ e.preventDefault(); addImageByUrl((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value=''} }} />
-            <input type="file" accept="image/*" onChange={onFileChange} />
+
+            <div className="flex gap-2 mb-2">
+              <input value={urlInput} onChange={e=>setUrlInput(e.target.value)} placeholder="Add image URL" className="flex-1 border rounded px-3 py-2" />
+              <button type="button" onClick={()=>{ if(urlInput) { addImageByUrl(urlInput); setUrlInput('') } }} className="px-3 py-2 bg-primary text-white rounded">Add</button>
+            </div>
+
+            <label className="inline-block mb-2">
+              <span className="sr-only">Upload image</span>
+              <input type="file" accept="image/*" onChange={onFileChange} className="hidden" id="product-image-upload" />
+              <label htmlFor="product-image-upload" className="inline-block px-3 py-2 bg-secondary text-white rounded cursor-pointer">Upload file…</label>
+            </label>
             {uploading && <div className="text-sm text-muted">Uploading…</div>}
           </div>
           <div>

@@ -99,7 +99,7 @@ export default function AdminPageClient() {
                     <td className="py-3">
                         { (p.images && p.images.length > 0) || p.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={(p.images && p.images[0]) ?? p.image} alt={p.name} className="w-20 h-14 object-cover rounded" />
+                          <img src={((p.images && p.images[0]) ?? p.image) ?? undefined} alt={p.name} className="w-20 h-14 object-cover rounded" />
                         ) : (
                           <div className="w-20 h-14 bg-muted rounded" />
                         )}
@@ -122,7 +122,7 @@ export default function AdminPageClient() {
         )}
       </section>
       {editing && (
-        <EditProductModal product={editing} onClose={()=>{ setEditing(null); setCreating(false) }} onSaved={(p)=>{ handleSaved(p); setCreating(false); setEditing(null) }} />
+        <EditProductModal product={editing as Product} onClose={() => { setEditing(null); setCreating(false); }} onSaved={(p) => { handleSaved(p as Product); setCreating(false); setEditing(null); }} />
       )}
     </div>
   )

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "prod-1",
+    "slug": "chili",
+    "name": "Chili",
+    "sku": "CHILI-1",
+    "image": "/products/chili-1.jpg"
+  },
+  {
+    "id": "prod-2",
+    "slug": "garlic",
+    "name": "Garlic",
+    "sku": "GARLIC-2",
+    "image": "/products/garlic-1.jpg"
+  },
+  {
+    "id": "prod-3",
+    "slug": "rice",
+    "name": "Rice",
+    "sku": "RICE-3",
+    "image": "/products/rice-1.jpg"
+  },
+  {
+    "id": "prod-4",
+    "slug": "tomato",
+    "name": "Tomato",
+    "sku": "TOMATO-4",
+    "image": "/products/tomato-1.jpg"
+  }
+]

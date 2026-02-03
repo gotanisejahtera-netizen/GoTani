@@ -1,0 +1,94 @@
+{
+  "featured": {
+    "id": 1,
+    "title": "Tips Mengurangi Food Loss dalam Pertanian Modern",
+    "excerpt": "Pelajari strategi efektif untuk mengurangi pemborosan makanan di setiap tahap rantai pasokan pertanian Anda. Dengan teknologi dan manajemen yang tepat, kerugian dapat diminimalisir hingga 50%.",
+    "date": "2025-01-15",
+    "author": "Dr. Ahmad Hidayat",
+    "category": "Tips & Panduan",
+    "readTime": "8 menit",
+    "image": "/agricultural-tips.jpg"
+  },
+  "posts": [
+    {
+      "id": 2,
+      "title": "Tren Harga Komoditas Pertanian Q1 2025",
+      "excerpt": "Analisis mendalam tentang pergerakan harga komoditas utama dan faktor-faktor yang mempengaruhinya di awal tahun 2025.",
+      "date": "2025-01-10",
+      "author": "Riset GoTani",
+      "category": "Analisis Pasar",
+      "readTime": "10 menit",
+      "image": "/market-analysis-board.png"
+    },
+    {
+      "id": 3,
+      "title": "Kisah Sukses Petani Bersama GoTani",
+      "excerpt": "Bagaimana Bapak Budi dari Yogyakarta meningkatkan pendapatannya hingga 40% setelah bergabung dengan GoTani.",
+      "date": "2025-01-05",
+      "author": "Tim Komunitas",
+      "category": "Kisah Sukses",
+      "readTime": "6 menit",
+      "image": "/success-story-farmer.jpg"
+    },
+    {
+      "id": 4,
+      "title": "Sustainability dalam Pertanian: Komitmen GoTani",
+      "excerpt": "Pelajari bagaimana GoTani berkontribusi dalam mengurangi emisi CO2 dan mempromosikan pertanian berkelanjutan.",
+      "date": "2024-12-28",
+      "author": "Sarah Wijaya",
+      "category": "Sustainability",
+      "readTime": "7 menit",
+      "image": "/sustainable-farming.png"
+    },
+    {
+      "id": 5,
+      "title": "Panduan Lengkap Menggunakan Platform GoTani",
+      "excerpt": "Tutorial step-by-step untuk petani dan distributor baru yang ingin memaksimalkan manfaat platform GoTani.",
+      "date": "2024-12-20",
+      "author": "Support Team",
+      "category": "Tips & Panduan",
+      "readTime": "12 menit",
+      "image": "/platform-guide.png"
+    },
+    {
+      "id": 6,
+      "title": "Teknologi AI dalam Prediksi Harga Pertanian",
+      "excerpt": "Bagaimana GoTani menggunakan artificial intelligence untuk memberikan prediksi harga yang akurat kepada pengguna.",
+      "date": "2024-12-15",
+      "author": "Tim Tech",
+      "category": "Teknologi",
+      "readTime": "9 menit",
+      "image": "/ai-technology.png"
+    },
+    {
+      "id": 7,
+      "title": "Strategi Negosiasi Harga untuk Petani",
+      "excerpt": "Tips praktis dan strategi efektif dalam bernegosiasi dengan distributor untuk mendapatkan harga terbaik untuk hasil panen Anda.",
+      "date": "2024-12-10",
+      "author": "Muhammad Rizki",
+      "category": "Tips & Panduan",
+      "readTime": "8 menit",
+      "image": "/farmer-negotiation.jpg"
+    },
+    {
+      "id": 8,
+      "title": "Manajemen Kualitas Pasca Panen",
+      "excerpt": "Teknik dan best practices dalam menjaga kualitas produk pertanian setelah panen untuk mengurangi kerugian dan meningkatkan nilai jual.",
+      "date": "2024-12-05",
+      "author": "Dr. Siti Nurhaliza",
+      "category": "Tips & Panduan",
+      "readTime": "11 menit",
+      "image": "/post-harvest-quality.jpg"
+    },
+    {
+      "id": 9,
+      "title": "Diversifikasi Produk: Peluang Baru untuk Petani",
+      "excerpt": "Eksplorasi peluang diversifikasi produk pertanian untuk meningkatkan pendapatan dan mengurangi risiko bisnis pertanian.",
+      "date": "2024-11-28",
+      "author": "Budi Santoso",
+      "category": "Bisnis",
+      "readTime": "7 menit",
+      "image": "/diverse-farm-products.jpg"
+    }
+  ]
+}

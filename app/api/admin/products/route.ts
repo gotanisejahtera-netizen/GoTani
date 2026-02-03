@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+export const runtime = 'nodejs'
 
 export async function GET() {
   const items = await prisma.product.findMany({ orderBy: { createdAt: 'desc' } })
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
     slug: body.slug,
     sku: body.sku ?? null,
     image: body.image ?? null,
-    images: body.images ?? null,
+    images: body.images ?? [],
     price: body.price ?? null,
     region: body.region ?? null,
   }})
@@ -27,7 +28,7 @@ export async function PUT(req: Request) {
       name: body.name,
       sku: body.sku ?? null,
       image: body.image ?? null,
-      images: body.images ?? null,
+      images: body.images ?? [],
       price: body.price ?? null,
       region: body.region ?? null,
       slug: body.slug ?? undefined,

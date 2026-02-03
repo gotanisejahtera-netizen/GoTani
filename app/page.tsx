@@ -88,8 +88,8 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-6 mt-12">
                 {[
                   { number: "5K+", label: t.hero.stats.farmers },
-                  { number: "1K+", label: t.hero.stats.distributors },
-                  { number: "₹2B+", label: t.hero.stats.transactions },
+                  { number: "2K+", label: t.hero.stats.distributors },
+                  { number: "100k+", label: t.hero.stats.transactions },
                 ].map((stat) => (
                   <div key={stat.label} className="fade-in">
                     <div className="text-2xl sm:text-3xl font-bold text-primary">{stat.number}</div>

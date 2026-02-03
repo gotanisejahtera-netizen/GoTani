@@ -34,7 +34,7 @@ export default function AboutPage() {
         { number: '5K+', label: 'Petani Terdaftar' },
         { number: '2K+', label: 'Distributor' },
         { number: '25', label: 'Provinsi' },
-        { number: '₹40M+', label: 'Transaksi' },
+        { number: '100k+', label: 'Transaksi' },
       ],
     },
     en: {
@@ -61,8 +61,8 @@ export default function AboutPage() {
       stats: [
         { number: '5K+', label: 'Registered Farmers' },
         { number: '2K+', label: 'Distributors' },
-        { number: '25', label: 'Provinces' },
-        { number: '₹40M+', label: 'Transactions' },
+        { number: '8', label: 'Provinces' },
+        { number: '100k+', label: 'Transactions' },
       ],
     },
   }

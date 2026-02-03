@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'nodejs'
 import { verifyToken } from '@/lib/auth'
 
 export async function GET(req: Request) {

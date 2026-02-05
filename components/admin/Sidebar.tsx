@@ -63,7 +63,7 @@ export default function Sidebar() {
           {t.admin.signOut}
         </button>
 
-        <div className="mt-3 text-xs text-muted-foreground">v1 — Admin</div>
+        <div className="mt-3 text-xs text-muted-foreground">GoTani — Admin</div>
       </div>
     </aside>
   )

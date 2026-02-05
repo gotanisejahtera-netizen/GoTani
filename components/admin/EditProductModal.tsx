@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
+import { toast } from '@/hooks/use-toast'
 import { useLanguage } from '@/app/language-provider'
 import { formatCurrencyAmount } from '@/lib/format'
 import { translations } from '@/lib/translations'
@@ -28,6 +29,7 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
   const [region, setRegion] = useState(product.region ?? '')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [errors, setErrors] = useState<{price?:string, region?:string}>({})
   const [urlInput, setUrlInput] = useState('')
 
@@ -65,7 +67,7 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
       onSaved(updated)
       onClose()
     }catch(e){
-      alert('Failed to save')
+        toast({ title: 'Save failed', description: 'Failed to save product', variant: 'destructive' })
     }finally{
       setSaving(false)
     }
@@ -76,26 +78,82 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
     if (!file) return
     setUploading(true)
     try{
-      // Browser-friendly conversion to base64 (avoid Node Buffer in client)
+      // Compress / resize image client-side to avoid server 413 errors
+      const maxDim = 1600
+      // createImageBitmap gives a fast way to get an ImageBitmap from File
+      let bitmap: ImageBitmap | null = null
+      try { bitmap = await createImageBitmap(file) } catch (err) { bitmap = null }
+
+      let blobToUpload: Blob
+      if (bitmap) {
+        const { width, height } = bitmap
+        let targetWidth = width
+        let targetHeight = height
+        if (width > maxDim || height > maxDim) {
+          if (width >= height) {
+            targetWidth = maxDim
+            targetHeight = Math.round((height * maxDim) / width)
+          } else {
+            targetHeight = maxDim
+            targetWidth = Math.round((width * maxDim) / height)
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight)
+        blobToUpload = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8)) as Blob
+      } else {
+        // fallback: use original file
+        blobToUpload = file
+      }
+
+      // Convert blob to base64
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader()
         reader.onload = () => {
           const result = reader.result as string
-          // result is data:[<mediatype>][;base64],<data>
           const parts = result.split(',')
           resolve(parts[1] ?? '')
         }
         reader.onerror = (err) => reject(err)
-        reader.readAsDataURL(file)
+        reader.readAsDataURL(blobToUpload)
       })
-      const filename = `${Date.now()}-${file.name}`
-      const res = await fetch('/api/admin/upload', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ filename, data: base64 }) })
-      const json = await res.json()
-      if (json.url) setImages((prev)=>[...prev, json.url])
-    }catch(err){
-      alert('Upload failed')
+
+      const filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+
+      // Use XHR to monitor upload progress
+      const responseText = await new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', '/api/admin/upload')
+        xhr.setRequestHeader('Content-Type', 'application/json')
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100))
+          }
+        }
+        xhr.onload = () => {
+          if (xhr.status === 413) return reject({ status: 413, body: xhr.responseText })
+          if (xhr.status >= 200 && xhr.status < 300) return resolve(xhr.responseText)
+          return reject({ status: xhr.status, body: xhr.responseText })
+        }
+        xhr.onerror = () => reject({ status: 0 })
+        xhr.send(JSON.stringify({ filename, data: base64 }))
+      })
+
+      let json = null
+      try { json = JSON.parse(responseText) } catch (err) { json = null }
+      if (json && json.url) setImages((prev)=>[...prev, json.url])
+    }catch(err: any){
+      if (err && err.status === 413) {
+          toast({ title: 'Upload failed', description: 'File terlalu besar setelah encoding. Coba turunkan resolusi atau kualitas gambar.', variant: 'destructive' })
+      } else {
+          toast({ title: 'Upload failed', description: 'Upload failed', variant: 'destructive' })
+      }
     }finally{
       setUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -199,7 +257,14 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
               <input type="file" accept="image/*" onChange={onFileChange} className="hidden" id="product-image-upload" />
               <label htmlFor="product-image-upload" className="inline-block px-3 py-2 bg-secondary text-white rounded cursor-pointer">Upload file…</label>
             </label>
-            {uploading && <div className="text-sm text-muted">Uploading…</div>}
+            {uploading && (
+              <div className="w-full">
+                <div className="text-sm text-muted mb-1">Uploading… {uploadProgress}%</div>
+                <div className="w-full bg-muted h-2 rounded overflow-hidden">
+                  <div className="h-2 bg-primary" style={{ width: `${uploadProgress}%` }} />
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Image URL</label>

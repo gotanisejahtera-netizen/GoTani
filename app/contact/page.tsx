@@ -6,6 +6,7 @@ import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
 import { useLanguage } from "@/app/language-provider"
 import { PHONE_NUMBER, WHATSAPP_URL } from "@/lib/translations"
 import { useState, useEffect } from 'react'
+import { toast } from '@/hooks/use-toast'
 
 export default function ContactPage() {
   const { language } = useLanguage()
@@ -80,7 +81,7 @@ export default function ContactPage() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!name || !message) {
-      alert(language === 'id' ? 'Nama dan pesan harus diisi' : 'Name and message are required')
+      toast({ title: language === 'id' ? 'Form tidak lengkap' : 'Missing fields', description: language === 'id' ? 'Nama dan pesan harus diisi' : 'Name and message are required', variant: 'destructive' })
       return
     }
     const text = buildWhatsAppMessage()

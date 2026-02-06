@@ -56,7 +56,7 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
     // validate client-side
     const validationErrors: any = {}
     if (!price) validationErrors.price = 'Please enter a price (string allowed, e.g. 30.000/kg)'
-    if (!region) validationErrors.region = 'Please select a region'
+    if (!region) validationErrors.region = 'Please enter a region'
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
 
@@ -237,16 +237,12 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
 
           <div>
             <label className="block text-sm font-medium mb-1">Region</label>
-            <select className="w-full border rounded px-3 py-2" value={region} onChange={(e)=>{ setRegion(e.target.value); if (errors.region) setErrors(prev=>({ ...prev, region: undefined })) }}>
-              <option value="">Select region</option>
-              <option value="Jawa">Jawa</option>
-              <option value="Sumatra">Sumatra</option>
-              <option value="Kalimantan">Kalimantan</option>
-              <option value="Sulawesi">Sulawesi</option>
-              <option value="Bali & Nusa Tenggara">Bali & Nusa Tenggara</option>
-              <option value="Maluku & Papua">Maluku & Papua</option>
-              <option value="Other">Other</option>
-            </select>
+            <input
+              className="w-full border rounded px-3 py-2"
+              value={region}
+              onChange={(e) => { setRegion(e.target.value); if (errors.region) setErrors(prev=>({ ...prev, region: undefined })) }}
+              placeholder="e.g. Jawa"
+            />
             {errors.region && <div className="text-sm text-red-600 mt-1">{errors.region}</div>}
           </div>
           <div>

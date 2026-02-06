@@ -4,12 +4,13 @@ import React, { useEffect, useState } from "react"
 import { useLanguage } from "@/app/language-provider"
 import EditProductModal from "@/components/admin/EditProductModal"
 import { translations } from "@/lib/translations"
+import { toast } from '@/hooks/use-toast'
 
 type Product = {
   id: string
   slug: string
   name: string
-  sku?: string
+  sku?: string | null
   image?: string | null
   images?: string[] | null
   price?: string | null
@@ -67,11 +68,30 @@ export default function AdminProductsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this product?")) return
-    await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
+    const doDelete = async () => {
+      try {
+        const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+        if (!res.ok) throw new Error('Delete failed')
+        setProducts((p) => p.filter((x) => x.id !== id))
+        toast({ title: 'Deleted', description: 'Product deleted.' })
+      } catch (e) {
+        toast({ title: 'Delete failed', description: 'Failed to delete product', variant: 'destructive' })
+      }
+    }
+
+    toast({
+      title: 'Delete this product?',
+      description: 'This action cannot be undone.',
+      variant: 'destructive',
+      action: (
+        <button
+          onClick={doDelete}
+          className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        >
+          Delete
+        </button>
+      ),
     })
-    setProducts((p) => p.filter((x) => x.id !== id))
   }
 
   function handleSaved(updated: Product) {

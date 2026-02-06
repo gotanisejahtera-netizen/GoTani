@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { useLanguage } from "@/app/language-provider"
 import EditBlogModal from "@/components/admin/EditBlogModal"
 import { translations } from "@/lib/translations"
+import { toast } from '@/hooks/use-toast'
 
 export default function AdminBlogsPage() {
   const { language } = useLanguage()
@@ -47,11 +48,30 @@ export default function AdminBlogsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this post?")) return
-    await fetch(`/api/admin/blogs?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
+    const doDelete = async () => {
+      try {
+        const res = await fetch(`/api/admin/blogs?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+        if (!res.ok) throw new Error('Delete failed')
+        setBlogs((s) => s.filter((x) => x.id !== id))
+        toast({ title: 'Deleted', description: 'Post deleted.' })
+      } catch (e) {
+        toast({ title: 'Delete failed', description: 'Failed to delete post', variant: 'destructive' })
+      }
+    }
+
+    toast({
+      title: 'Delete this post?',
+      description: 'This action cannot be undone.',
+      variant: 'destructive',
+      action: (
+        <button
+          onClick={doDelete}
+          className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        >
+          Delete
+        </button>
+      ),
     })
-    setBlogs((s) => s.filter((x) => x.id !== id))
   }
 
   function handleBlogSaved(updated: any) {

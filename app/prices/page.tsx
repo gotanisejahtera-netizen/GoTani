@@ -183,15 +183,21 @@ export default function PricesPage() {
                 </div>
 
                 {/* Contact Button */}
-                <a
-                  href="https://wa.me/6281554877596"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => {
+                    const parts: string[] = []
+                    parts.push('Halo GoTani! Ada yang mau kusampaikan nih')
+                    parts.push('')
+                    parts.push((language === 'id' ? 'Saya ingin berdiskusi mengenai produk ' : 'I would like to discuss the product: ') + `*${selectedProduct.name}*`)
+                    const url = `https://wa.me/6281554877596?text=${encodeURIComponent(parts.join('\n'))}`
+                    window.open(url, '_blank')
+                  }}
                   className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold text-sm w-full"
                 >
                   {language === 'id' ? 'Hubungi Kami' : 'Contact Us'}
                   <ArrowRight className="w-4 h-4" />
-                </a>
+                </button>
               </div>
 
               {/* Quick Specifications */}

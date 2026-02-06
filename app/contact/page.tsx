@@ -24,7 +24,15 @@ export default function ContactPage() {
       formTitle: 'Kirim Pesan',
       labels: { name: 'Nama Lengkap', email: 'Email', phone: 'Telepon', topic: 'Topik', message: 'Pesan' },
       placeholders: { name: 'Nama Anda', email: 'email@example.com', phone: '+62-8xx-xxxx-xxxx', message: 'Tulis pesan Anda di sini...' },
-      topicOptions: ['Pilih topik...', 'Pendaftaran Akun', 'Fitur Platform', 'Masalah Teknis', 'Partnership', 'Lainnya'],
+      topicOptions: [
+        'Daftar sebagai petani',
+        'pembelian produk',
+        'partnership',
+        'fitur platform',
+        'kendala dan masalah teknis',
+        'kritik dan saran',
+        'lainnya',
+      ],
       submit: 'Kirim Pesan',
       hours: 'Jam Operasional',
       response: 'Response Time',
@@ -47,7 +55,15 @@ export default function ContactPage() {
       formTitle: 'Send Message',
       labels: { name: 'Full Name', email: 'Email', phone: 'Phone', topic: 'Topic', message: 'Message' },
       placeholders: { name: 'Your Name', email: 'email@example.com', phone: '+62-8xx-xxxx-xxxx', message: 'Write your message here...' },
-      topicOptions: ['Choose topic...', 'Account Registration', 'Platform Features', 'Technical Issues', 'Partnership', 'Others'],
+      topicOptions: [
+        'Daftar sebagai petani',
+        'pembelian produk',
+        'partnership',
+        'fitur platform',
+        'kendala dan masalah teknis',
+        'kritik dan saran',
+        'lainnya',
+      ],
       submit: 'Send Message',
       hours: 'Operating Hours',
       response: 'Response Time',
@@ -70,6 +86,10 @@ export default function ContactPage() {
 
   function buildWhatsAppMessage() {
     const parts: string[] = []
+    parts.push('Halo GoTani! Ada yang mau kusampaikan nih')
+    parts.push('')
+    parts.push('DATA PROFILE')
+    parts.push('')
     parts.push(`${t.labels.name}: ${name}`)
     parts.push(`${t.labels.email}: ${email}`)
     parts.push(`${t.labels.phone}: ${phone}`)

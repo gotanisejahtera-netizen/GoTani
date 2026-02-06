@@ -2,9 +2,18 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 export const runtime = 'nodejs'
 
-export async function GET() {
-  const items = await prisma.blog.findMany({ orderBy: { date: 'desc' } })
-  return NextResponse.json(items)
+export async function GET(req: Request) {
+  const url = new URL(req.url)
+  const page = Math.max(1, Number(url.searchParams.get('page') ?? '1'))
+  const perPage = Math.max(1, Math.min(100, Number(url.searchParams.get('perPage') ?? '12')))
+  const skip = (page - 1) * perPage
+
+  const [items, total] = await Promise.all([
+    prisma.blog.findMany({ orderBy: { date: 'desc' }, skip, take: perPage }),
+    prisma.blog.count(),
+  ])
+
+  return NextResponse.json({ items, total })
 }
 
 export async function POST(req: Request) {

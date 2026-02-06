@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { toast } from '@/hooks/use-toast'
 import { useLanguage } from '@/app/language-provider'
 // price is handled as a free-form string (e.g. "30.000/kg")
@@ -20,6 +20,7 @@ type Product = {
 export default function EditProductModal({ product, onClose, onSaved }:{ product: Product, onClose: ()=>void, onSaved: (p: Product)=>void }){
   const { language } = useLanguage()
   const t = translations[language]
+  const firstInputRef = useRef<HTMLInputElement | null>(null)
   const [name, setName] = useState(product.name)
   const [sku, setSku] = useState(product.sku ?? '')
   const [image, setImage] = useState(product.image ?? '')
@@ -35,6 +36,21 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
   const [uploadProgress, setUploadProgress] = useState(0)
   const [errors, setErrors] = useState<{price?:string, region?:string}>({})
   const [urlInput, setUrlInput] = useState('')
+
+  // lock background scroll when modal open
+  useEffect(()=>{
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return ()=>{ document.body.style.overflow = prev }
+  },[])
+
+  // focus first input and close on Escape
+  useEffect(()=>{
+    firstInputRef.current?.focus()
+    function onKey(e: KeyboardEvent){ if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return ()=> window.removeEventListener('keydown', onKey)
+  },[onClose])
 
   async function save(){
     // validate client-side
@@ -80,14 +96,10 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
     }
   }
 
-  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>){
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function uploadFile(file: File){
     setUploading(true)
     try{
-      // Compress / resize image client-side to avoid server 413 errors
       const maxDim = 1600
-      // createImageBitmap gives a fast way to get an ImageBitmap from File
       let bitmap: ImageBitmap | null = null
       try { bitmap = await createImageBitmap(file) } catch (err) { bitmap = null }
 
@@ -112,11 +124,9 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
         ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight)
         blobToUpload = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8)) as Blob
       } else {
-        // fallback: use original file
         blobToUpload = file
       }
 
-      // Convert blob to base64
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader()
         reader.onload = () => {
@@ -130,7 +140,6 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
 
       const filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, '.jpg')}`
 
-      // Use XHR to monitor upload progress
       const responseText = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         xhr.open('POST', '/api/admin/upload')
@@ -164,6 +173,19 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
     }
   }
 
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>){
+    const file = e.target.files?.[0]
+    if (!file) return
+    await uploadFile(file)
+  }
+
+  async function handleDrop(e: React.DragEvent){
+    e.preventDefault()
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+    await uploadFile(file)
+  }
+
   function removeImage(idx: number){
     setImages((prev)=> prev.filter((_,i)=> i !== idx))
   }
@@ -186,10 +208,14 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
-        <h3 className="text-lg font-medium mb-4">{t.admin.edit} Product</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div role="dialog" aria-modal="true" className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h3 className="text-lg font-medium">{t.admin.edit} Product</h3>
+          <button aria-label="Close dialog" onClick={onClose} className="text-2xl leading-none px-2 py-1 hover:bg-muted rounded">×</button>
+        </div>
 
+        <div className="p-4 overflow-auto">
           <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium mb-1">Name</label>
@@ -251,11 +277,17 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
               <button type="button" onClick={()=>{ if(urlInput) { addImageByUrl(urlInput); setUrlInput('') } }} className="px-3 py-2 bg-primary text-white rounded">Add</button>
             </div>
 
-            <label className="inline-block mb-2">
-              <span className="sr-only">Upload image</span>
-              <input type="file" accept="image/*" onChange={onFileChange} className="hidden" id="product-image-upload" />
-              <label htmlFor="product-image-upload" className="inline-block px-3 py-2 bg-secondary text-white rounded cursor-pointer">Upload file…</label>
-            </label>
+            <div className="mb-2">
+              <div onDrop={handleDrop} onDragOver={(e)=>e.preventDefault()} className="border-dashed border-2 border-muted rounded p-4 flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="text-sm text-muted">Drag & drop an image here, or</div>
+                </div>
+                <div>
+                  <input type="file" accept="image/*" onChange={onFileChange} className="hidden" id="product-image-upload" />
+                  <label htmlFor="product-image-upload" className="inline-block px-3 py-2 bg-secondary text-white rounded cursor-pointer">Choose file…</label>
+                </div>
+              </div>
+            </div>
             {uploading && (
               <div className="w-full">
                 <div className="text-sm text-muted mb-1">Uploading… {uploadProgress}%</div>
@@ -302,7 +334,9 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-2">
+        </div>
+
+        <div className="flex-shrink-0 p-4 border-t bg-white flex justify-end gap-2">
           <button onClick={onClose} className="px-3 py-2 bg-muted rounded">{t.admin.cancel}</button>
           <button onClick={save} disabled={saving} className="px-3 py-2 bg-primary text-white rounded">{saving ? t.admin.save + '...' : t.admin.save}</button>
         </div>

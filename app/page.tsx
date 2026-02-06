@@ -89,7 +89,7 @@ export default function Home() {
                 {[
                   { number: "5K+", label: t.hero.stats.farmers },
                   { number: "2K+", label: t.hero.stats.distributors },
-                  { number: "100k+", label: t.hero.stats.transactions },
+                  { number: "8", label: t.hero.stats.provinces },
                 ].map((stat) => (
                   <div key={stat.label} className="fade-in">
                     <div className="text-2xl sm:text-3xl font-bold text-primary">{stat.number}</div>
@@ -228,33 +228,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Latest from Admin (DB)
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">{t.latest.title}</h2>
-            <p className="text-muted-foreground">{t.latest.description}</p>
-              </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {dbProducts.length === 0 ? (
-              <div className="text-muted">{t.latest.noProducts}</div>
-            ) : (
-              dbProducts.map((p: any) => (
-                <ProductCard
-                  key={p.id}
-                  name={p.name}
-                  image={p.image ?? (p.images?.[0] ?? '/placeholder.svg')}
-                  price={formatPrice(p.price)}
-                  region={p.region ?? '-'}
-                  onViewDetail={() => { window.location.href = '/prices' }}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </section> */}
 
       <Footer />
     </main>

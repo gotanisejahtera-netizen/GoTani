@@ -4,103 +4,26 @@ import Link from "next/link"
 import { Calendar, User, Clock, ArrowLeft, Share2, Facebook, Twitter, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default function BlogPostPage({ params }: { params: { id: string } }) {
-  // This would normally fetch from a database
-  const post = {
-    id: params.id,
-    title: "Tips Mengurangi Food Loss dalam Pertanian Modern",
-    excerpt:
-      "Pelajari strategi efektif untuk mengurangi pemborosan makanan di setiap tahap rantai pasokan pertanian Anda.",
-    date: "2025-01-15",
-    author: "Dr. Ahmad Hidayat",
-    authorBio: "Pakar Pertanian Berkelanjutan dengan pengalaman 15 tahun di bidang food supply chain management.",
-    category: "Tips & Panduan",
-    readTime: "8 menit",
-    image: "/agricultural-tips.jpg",
-    content: `
-      <h2>Mengapa Food Loss Menjadi Masalah Serius?</h2>
-      <p>Food loss atau kehilangan pangan merupakan salah satu tantangan terbesar dalam industri pertanian modern. Di Indonesia, diperkirakan 30-40% hasil panen terbuang sia-sia sebelum sampai ke konsumen akhir. Ini bukan hanya merugikan petani secara ekonomi, tetapi juga berdampak negatif pada lingkungan dan ketahanan pangan nasional.</p>
-      
-      <p>Kehilangan ini terjadi di berbagai tahap: saat panen, penanganan pasca panen, penyimpanan, transportasi, hingga distribusi. Dengan strategi yang tepat, kerugian ini dapat diminimalkan secara signifikan.</p>
-
-      <h2>Strategi Utama Mengurangi Food Loss</h2>
-      
-      <h3>1. Timing Panen yang Tepat</h3>
-      <p>Salah satu faktor terpenting adalah menentukan waktu panen yang optimal. Panen terlalu cepat atau terlalu lambat dapat menyebabkan kualitas produk menurun drastis. Gunakan indikator kematangan yang tepat untuk setiap jenis komoditas.</p>
-      
-      <ul>
-        <li>Gunakan teknologi sensor untuk mengukur tingkat kematangan</li>
-        <li>Perhatikan kondisi cuaca sebelum panen</li>
-        <li>Koordinasikan dengan buyer untuk memastikan distribusi cepat</li>
-      </ul>
-
-      <h3>2. Penanganan Pasca Panen yang Baik</h3>
-      <p>Periode pasca panen adalah fase kritis dimana produk sangat rentan terhadap kerusakan. Beberapa praktik terbaik meliputi:</p>
-      
-      <ul>
-        <li><strong>Sortasi dan Grading:</strong> Pisahkan produk berdasarkan kualitas untuk memaksimalkan nilai jual</li>
-        <li><strong>Pembersihan:</strong> Bersihkan produk dari kotoran dan kontaminan</li>
-        <li><strong>Pre-cooling:</strong> Turunkan suhu produk dengan cepat untuk memperlambat respirasi</li>
-        <li><strong>Pengemasan:</strong> Gunakan kemasan yang sesuai untuk melindungi produk</li>
-      </ul>
-
-      <h3>3. Sistem Penyimpanan yang Optimal</h3>
-      <p>Investasi dalam fasilitas penyimpanan yang tepat sangat penting. Cold storage dan controlled atmosphere storage dapat memperpanjang masa simpan produk hingga beberapa minggu atau bulan.</p>
-      
-      <blockquote>
-        "Dengan cold storage yang baik, kami berhasil mengurangi food loss dari 35% menjadi hanya 8%. Ini adalah game changer untuk bisnis kami." - Bapak Budi, Petani Sayuran Yogyakarta
-      </blockquote>
-
-      <h3>4. Manajemen Rantai Pasokan yang Efisien</h3>
-      <p>Koordinasi yang baik antara petani, transporter, dan distributor sangat penting. Platform seperti GoTani membantu menciptakan transparansi dan efisiensi dalam rantai pasokan.</p>
-
-      <h2>Teknologi Pendukung</h2>
-      <p>Teknologi modern telah membuat pengelolaan food loss jauh lebih mudah:</p>
-      
-      <ul>
-        <li><strong>IoT Sensors:</strong> Monitor suhu dan kelembaban secara real-time</li>
-        <li><strong>Blockchain:</strong> Traceability penuh dari farm to table</li>
-        <li><strong>AI Prediction:</strong> Prediksi demand untuk mengurangi overproduction</li>
-        <li><strong>Mobile Apps:</strong> Koordinasi real-time dengan buyer</li>
-      </ul>
-
-      <h2>Implementasi dengan GoTani</h2>
-      <p>GoTani menyediakan berbagai tools untuk membantu petani mengurangi food loss:</p>
-      
-      <ul>
-        <li>Dashboard untuk tracking kondisi penyimpanan</li>
-        <li>Koneksi langsung dengan distributor untuk distribusi cepat</li>
-        <li>Prediksi harga untuk timing panen optimal</li>
-        <li>Network cold storage partners di berbagai lokasi</li>
-      </ul>
-
-      <h2>Kesimpulan</h2>
-      <p>Mengurangi food loss bukan hanya tentang meningkatkan profit, tetapi juga berkontribusi pada sustainability dan ketahanan pangan. Dengan kombinasi praktik yang baik, teknologi modern, dan platform seperti GoTani, petani Indonesia dapat mengurangi kerugian secara signifikan.</p>
-      
-      <p>Mulai langkah kecil hari ini, dan lihat dampak besarnya dalam jangka panjang. Bergabunglah dengan ribuan petani lain yang telah merasakan manfaatnya.</p>
-    `,
+export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const resolvedParams = await params as { id: string }
+  const slug = resolvedParams.id
+  // Build a stable absolute URL for the internal API (fallback to localhost for dev)
+  const base = process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${process.env.PORT || 3000}`
+  const apiUrl = new URL('/api/blogs', base).toString()
+  const res = await fetch(apiUrl, { cache: 'no-store' }).catch(() => null)
+  const allPosts = res && res.ok ? await res.json() : []
+  const post = allPosts.find((p: any) => p.slug === slug)
+  if (!post) {
+    return (
+      <main>
+        <Navigation />
+        <div className="pt-32 px-4">Post not found</div>
+        <Footer />
+      </main>
+    )
   }
 
-  const relatedPosts = [
-    {
-      id: 5,
-      title: "Panduan Lengkap Menggunakan Platform GoTani",
-      image: "/platform-guide.png",
-      category: "Tips & Panduan",
-    },
-    {
-      id: 8,
-      title: "Manajemen Kualitas Pasca Panen",
-      image: "/post-harvest.jpg",
-      category: "Tips & Panduan",
-    },
-    {
-      id: 6,
-      title: "Teknologi AI dalam Prediksi Harga Pertanian",
-      image: "/ai-technology.png",
-      category: "Teknologi",
-    },
-  ]
+  const relatedPosts = (allPosts || []).filter((p: any) => p.id !== post.id).slice(0, 3)
 
   return (
     <main>
@@ -156,11 +79,11 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
               <div className="flex gap-4 text-sm text-muted-foreground ml-auto">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {new Date(post.date).toLocaleDateString("id-ID", {
+                  {post.date ? new Date(post.date).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
-                  })}
+                  }) : ''}
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
@@ -191,7 +114,7 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
         {/* Article Content */}
         <div className="px-4 sm:px-6 lg:px-8 mb-16">
           <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
-            <div className="article-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div className="article-content" dangerouslySetInnerHTML={{ __html: post.content ?? '' }} />
           </div>
         </div>
 
@@ -219,8 +142,8 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
             <h2 className="text-2xl font-bold text-foreground mb-8">Artikel Terkait</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {relatedPosts.map((relatedPost) => (
-                <Link href={`/blog/${relatedPost.id}`} key={relatedPost.id}>
+              {relatedPosts.map((relatedPost: any) => (
+                <Link href={`/blog/${relatedPost.slug}`} key={relatedPost.id}>
                   <article className="bg-white border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
                     <div className="relative h-48 overflow-hidden">
                       <img

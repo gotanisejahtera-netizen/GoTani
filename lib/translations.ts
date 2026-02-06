@@ -27,7 +27,7 @@ export const translations = {
       stats: {
         farmers: 'Petani Aktif',
         distributors: 'Distributor',
-        transactions: 'Transaksi',
+        provinces: 'Provinsi',
       },
     },
     // WhatsApp Section
@@ -106,7 +106,7 @@ export const translations = {
       stats: {
         farmers: 'Active Farmers',
         distributors: 'Distributors',
-        transactions: 'Transactions',
+        provinces: 'Provinces',
       },
     },
     // WhatsApp Section

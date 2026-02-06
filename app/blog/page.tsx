@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
@@ -6,12 +6,36 @@ import Link from "next/link"
 import { Calendar, User, Clock, Search, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/app/language-provider"
-import blogData from "./blog-data.json"
+import React, { useEffect, useState } from 'react'
+
+type Post = {
+  id: string
+  slug: string
+  title: string
+  excerpt?: string
+  date?: string
+  author?: string
+  category?: string
+  readTime?: string
+  image?: string
+}
 
 export default function BlogPage() {
   const { language } = useLanguage()
-  const featuredPost = blogData.featured
-  const posts = blogData.posts
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    fetch('/api/blogs').then((r) => r.json()).then((data) => {
+      if (!mounted) return
+      setPosts(data)
+    }).catch(()=> setPosts([])).finally(()=> { if(mounted) setLoading(false) })
+    return ()=> { mounted = false }
+  }, [])
+
+  const featuredPost = posts.find(p => (p as any).featured) ?? posts[0]
 
   const content = {
     id: {
@@ -19,7 +43,7 @@ export default function BlogPage() {
       subtitle: 'Artikel, tips, dan wawasan terbaru tentang pertanian berkelanjutan, analisis pasar komoditas, dan teknologi pertanian modern.',
       searchPlaceholder: 'Cari artikel...',
       categories: [
-        { name: "Semua", count: posts.length + 1 },
+        { name: "Semua", count: (posts?.length ?? 0) + (featuredPost ? 1 : 0) },
         { name: "Tips & Panduan", count: 4 },
         { name: "Analisis Pasar", count: 1 },
         { name: "Kisah Sukses", count: 1 },
@@ -36,7 +60,7 @@ export default function BlogPage() {
       subtitle: 'Latest articles, tips, and insights about sustainable agriculture, commodity market analysis, and modern agricultural technology.',
       searchPlaceholder: 'Search articles...',
       categories: [
-        { name: "All", count: posts.length + 1 },
+        { name: "All", count: (posts?.length ?? 0) + (featuredPost ? 1 : 0) },
         { name: "Tips & Guides", count: 4 },
         { name: "Market Analysis", count: 1 },
         { name: "Success Stories", count: 1 },
@@ -109,53 +133,55 @@ export default function BlogPage() {
             <h2 className="text-2xl font-bold text-foreground">{language === 'id' ? 'Artikel Unggulan' : 'Featured Article'}</h2>
           </div>
 
-          <Link href={`/blog/${featuredPost.id}`}>
-            <article className="grid md:grid-cols-2 gap-8 bg-white border border-border rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500 group">
-              <div className="relative h-64 md:h-auto overflow-hidden">
-                <img
-                  src={featuredPost.image || "/placeholder.svg"}
-                  alt={featuredPost.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="px-4 py-1 bg-primary text-white text-xs font-semibold rounded-full">FEATURED</span>
-                </div>
-              </div>
-
-              <div className="p-8 flex flex-col justify-center">
-                <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4 w-fit">
-                  {featuredPost.category}
-                </span>
-
-                <h3 className="text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {featuredPost.title}
-                </h3>
-
-                <p className="text-muted-foreground mb-6 leading-relaxed">{featuredPost.excerpt}</p>
-
-                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    {featuredPost.author}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(featuredPost.date).toLocaleDateString(language === 'id' ? "id-ID" : "en-US", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {featuredPost.readTime}
+          {featuredPost && (
+            <Link href={`/blog/${featuredPost.slug}`}>
+              <article className="grid md:grid-cols-2 gap-8 bg-white border border-border rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-500 group">
+                <div className="relative h-64 md:h-auto overflow-hidden">
+                  <img
+                    src={featuredPost.image || "/placeholder.svg"}
+                    alt={featuredPost.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="px-4 py-1 bg-primary text-white text-xs font-semibold rounded-full">FEATURED</span>
                   </div>
                 </div>
 
-                <Button className="mt-6 w-fit">{language === 'id' ? 'Baca Artikel' : 'Read Article'} →</Button>
-              </div>
-            </article>
-          </Link>
+                <div className="p-8 flex flex-col justify-center">
+                  <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4 w-fit">
+                    {featuredPost.category}
+                  </span>
+
+                  <h3 className="text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                    {featuredPost.title}
+                  </h3>
+
+                  <p className="text-muted-foreground mb-6 leading-relaxed">{featuredPost.excerpt}</p>
+
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {featuredPost.author}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {featuredPost.date ? new Date(featuredPost.date).toLocaleDateString(language === 'id' ? "id-ID" : "en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }) : ''}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      {featuredPost.readTime}
+                    </div>
+                  </div>
+
+                  <Button className="mt-6 w-fit">{language === 'id' ? 'Baca Artikel' : 'Read Article'} →</Button>
+                </div>
+              </article>
+            </Link>
+          )}
         </div>
       </section>
 
@@ -166,7 +192,7 @@ export default function BlogPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <Link href={`/blog/${post.id}`} key={post.id}>
+              <Link href={`/blog/${post.slug}`} key={post.id}>
                 <article className="bg-white border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group h-full flex flex-col">
                   <div className="relative h-48 overflow-hidden">
                     <img
@@ -183,11 +209,11 @@ export default function BlogPage() {
                     <div className="flex gap-4 text-xs text-muted-foreground mb-3">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {new Date(post.date).toLocaleDateString(language === 'id' ? "id-ID" : "en-US", {
+                        {post.date ? new Date(post.date).toLocaleDateString(language === 'id' ? "id-ID" : "en-US", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
-                        })}
+                        }) : ''}
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />

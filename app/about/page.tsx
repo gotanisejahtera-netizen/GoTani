@@ -33,8 +33,7 @@ export default function AboutPage() {
       stats: [
         { number: '5K+', label: 'Petani Terdaftar' },
         { number: '2K+', label: 'Distributor' },
-        { number: '25', label: 'Provinsi' },
-        { number: '100k+', label: 'Transaksi' },
+        { number: '8', label: 'Provinsi' },
       ],
     },
     en: {
@@ -62,7 +61,6 @@ export default function AboutPage() {
         { number: '5K+', label: 'Registered Farmers' },
         { number: '2K+', label: 'Distributors' },
         { number: '8', label: 'Provinces' },
-        { number: '100k+', label: 'Transactions' },
       ],
     },
   }
@@ -156,7 +154,7 @@ export default function AboutPage() {
       {/* Statistics */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {t.stats.map((stat, index) => (
               <div key={index}>
                 <div className="text-4xl font-bold mb-2">{stat.number}</div>

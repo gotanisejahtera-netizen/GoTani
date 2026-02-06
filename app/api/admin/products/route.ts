@@ -17,6 +17,9 @@ export async function POST(req: Request) {
     images: body.images ?? [],
     price: body.price ?? null,
     region: body.region ?? null,
+    shortDesc: body.shortDesc ?? undefined,
+    specifications: body.specifications ?? undefined,
+    contact: body.contact ?? undefined,
   }})
   return NextResponse.json(item, { status: 201 })
 }
@@ -31,6 +34,9 @@ export async function PUT(req: Request) {
       images: body.images ?? [],
       price: body.price ?? null,
       region: body.region ?? null,
+      shortDesc: body.shortDesc ?? undefined,
+      specifications: body.specifications ?? undefined,
+      contact: body.contact ?? undefined,
       slug: body.slug ?? undefined,
     } })
     return NextResponse.json(updated)

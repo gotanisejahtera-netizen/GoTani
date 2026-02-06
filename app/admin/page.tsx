@@ -3,8 +3,8 @@
 
 import React, { useEffect, useState } from "react"
 import { useLanguage } from '@/app/language-provider'
-import { formatCurrencyAmount } from '@/lib/format'
 import EditProductModal from "@/components/admin/EditProductModal"
+import EditBlogModal from "@/components/admin/EditBlogModal"
 import { translations } from '@/lib/translations'
 
 type Product = {
@@ -16,6 +16,9 @@ type Product = {
   images?: string[] | null
   price?: string | null
   region?: string | null
+  shortDesc?: string | null
+  specifications?: any
+  contact?: string | null
 }
 
 export default function AdminPageClient() {
@@ -36,8 +39,6 @@ export default function AdminPageClient() {
     }
   }
 
-  useEffect(() => { load() }, [])
-
   async function handleDelete(id: string) {
     if (!confirm('Delete this product?')) return
     await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
@@ -47,17 +48,44 @@ export default function AdminPageClient() {
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
 
+  const [blogs, setBlogs] = useState<any[]>([])
+  const [blogLoading, setBlogLoading] = useState(true)
+  const [editingBlog, setEditingBlog] = useState<any | null>(null)
+
+  async function loadBlogs(){
+    setBlogLoading(true)
+    try{
+      const res = await fetch('/api/admin/blogs')
+      const json = await res.json()
+      setBlogs(json)
+    }catch(e){ setBlogs([]) }finally{ setBlogLoading(false) }
+  }
+
+  useEffect(() => { load(); loadBlogs() }, [])
+
   function openEdit(p: Product){
     setEditing(p)
   }
 
   function openCreate(){
     setCreating(true)
-    setEditing({ id: '', slug: '', name: '', sku: '', image: '', images: [], price: '', region: '' })
+    setEditing({ id: '', slug: '', name: '', sku: '', image: '', images: [], price: '', region: '', shortDesc: '', specifications: [], contact: '' })
+  }
+
+  function openCreateBlog(){
+    setEditingBlog({ id: '', title: '', slug: '', excerpt: '', content: '', images: [], category: '', author: '', date: '', readTime: '', featured: false })
   }
 
   function handleSaved(updated: Product){
     setProducts((list)=> {
+      const found = list.find((it)=> it.id === updated.id)
+      if (found) return list.map((it)=> it.id === updated.id ? updated : it)
+      return [updated, ...list]
+    })
+  }
+
+  function handleBlogSaved(updated: any){
+    setBlogs((list)=> {
       const found = list.find((it)=> it.id === updated.id)
       if (found) return list.map((it)=> it.id === updated.id ? updated : it)
       return [updated, ...list]
@@ -87,9 +115,11 @@ export default function AdminPageClient() {
                 <tr className="text-left text-sm text-muted border-b">
                   <th className="py-2">Image</th>
                   <th className="py-2">Name</th>
+                  <th className="py-2">Description</th>
                   <th className="py-2">Region</th>
                   <th className="py-2">Price</th>
                   <th className="py-2">SKU</th>
+                  <th className="py-2">Contact</th>
                   <th className="py-2">Actions</th>
                 </tr>
               </thead>
@@ -105,9 +135,11 @@ export default function AdminPageClient() {
                         )}
                     </td>
                     <td className="py-3">{p.name}</td>
+                    <td className="py-3">{p.shortDesc ?? '-'}</td>
                     <td className="py-3">{p.region ?? '-'}</td>
-                    <td className="py-3 font-semibold text-primary">{p.price ? formatCurrencyAmount(p.price, language) : '-'}</td>
+                    <td className="py-3 font-semibold text-primary">{p.price ?? '-'}</td>
                     <td className="py-3">{p.sku ?? '-'}</td>
+                    <td className="py-3">{p.contact ?? '-'}</td>
                     <td className="py-3">
                       <div className="flex gap-2">
                         <button onClick={() => openEdit(p)} className="px-3 py-1 bg-primary/10 text-primary rounded">Edit</button>
@@ -121,8 +153,59 @@ export default function AdminPageClient() {
           </div>
         )}
       </section>
+
+      {/* Blogs Section */}
+      <section className="bg-card rounded-lg shadow-sm p-6 mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium">Blogs</h2>
+          <div className="flex gap-2">
+            <button onClick={openCreateBlog} className="px-3 py-2 bg-primary text-white rounded">New Post</button>
+            <button onClick={loadBlogs} className="px-3 py-2 bg-muted rounded">Refresh</button>
+          </div>
+        </div>
+
+        {blogLoading ? (
+          <div>Loading…</div>
+        ) : blogs.length === 0 ? (
+          <div className="text-muted">No blog posts found</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border-collapse">
+              <thead>
+                <tr className="text-left text-sm text-muted border-b">
+                  <th className="py-2">Title</th>
+                  <th className="py-2">Category</th>
+                  <th className="py-2">Author</th>
+                  <th className="py-2">Date</th>
+                  <th className="py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {blogs.map((b) => (
+                  <tr key={b.id} className="border-b odd:bg-background/50">
+                    <td className="py-3">{b.title}</td>
+                    <td className="py-3">{b.category ?? '-'}</td>
+                    <td className="py-3">{b.author ?? '-'}</td>
+                    <td className="py-3">{b.date ? new Date(b.date).toLocaleDateString() : '-'}</td>
+                    <td className="py-3">
+                      <div className="flex gap-2">
+                        <button onClick={() => setEditingBlog(b)} className="px-3 py-1 bg-primary/10 text-primary rounded">Edit</button>
+                        <button onClick={async ()=>{ if(!confirm('Delete this post?')) return; await fetch(`/api/admin/blogs?id=${encodeURIComponent(b.id)}`, { method: 'DELETE' }); setBlogs((s)=>s.filter(x=>x.id!==b.id)) }} className="px-3 py-1 bg-destructive/10 text-destructive rounded">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       {editing && (
         <EditProductModal product={editing as Product} onClose={() => { setEditing(null); setCreating(false); }} onSaved={(p) => { handleSaved(p as Product); setCreating(false); setEditing(null); }} />
+      )}
+      {editingBlog && (
+        <EditBlogModal blog={editingBlog} onClose={() => { setEditingBlog(null); }} onSaved={(b)=> { handleBlogSaved(b); setEditingBlog(null); }} />
       )}
     </div>
   )

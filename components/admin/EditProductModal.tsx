@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { toast } from '@/hooks/use-toast'
 import { useLanguage } from '@/app/language-provider'
-import { formatCurrencyAmount } from '@/lib/format'
+// price is handled as a free-form string (e.g. "30.000/kg")
 import { translations } from '@/lib/translations'
 
 type Product = {
@@ -26,6 +26,9 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
   const [images, setImages] = useState<string[]>(product.images ?? (product.image ? [product.image] : []))
   const [price, setPrice] = useState(product.price ?? '')
   const [priceFocused, setPriceFocused] = useState(false)
+  const [shortDesc, setShortDesc] = useState((product as any).shortDesc ?? '')
+  const [contact, setContact] = useState((product as any).contact ?? '')
+  const [specifications, setSpecifications] = useState<{attribute:string;value:string}[]>((product as any).specifications ?? [])
   const [region, setRegion] = useState(product.region ?? '')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -36,7 +39,7 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
   async function save(){
     // validate client-side
     const validationErrors: any = {}
-    if (!price || Number(price) <= 0) validationErrors.price = 'Price must be greater than 0'
+    if (!price) validationErrors.price = 'Please enter a price (string allowed, e.g. 30.000/kg)'
     if (!region) validationErrors.region = 'Please select a region'
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
@@ -44,15 +47,19 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
     setSaving(true)
     try{
       const payload: any = { id: product.id, name, sku: sku || null, image: image || null, images: images.length ? images : null, price: price || null, region: region || null }
+      payload.shortDesc = shortDesc || null
+      payload.specifications = specifications.length ? specifications : null
+      payload.contact = contact || null
       let res
 
       if (!product.id) {
         // create
         const slug = name.toLowerCase().replace(/\s+/g,'-')
+        payload.slug = slug
         res = await fetch('/api/admin/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, slug, sku: sku || null, image: image || null, images: images.length ? images : null, price: price || null, region: region || null })
+          body: JSON.stringify(payload)
         })
       } else {
         // update
@@ -194,17 +201,9 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
               <span className="inline-block px-3 py-2 bg-gray-100 rounded-l border border-r-0">Rp</span>
               <input
                 className="w-full border rounded-r px-3 py-2"
-                value={priceFocused ? price : (price ? (formatCurrencyAmount(price, language) ?? String(price)) : '')}
-                onFocus={()=>setPriceFocused(true)}
-                onBlur={()=>{ setPriceFocused(false); /* keep raw numeric value in state */ }}
-                onChange={(e)=>{
-                  // allow only digits
-                  const v = e.target.value.replace(/[^0-9]/g, '')
-                  setPrice(v)
-                  if (errors.price) setErrors(prev=>({ ...prev, price: undefined }))
-                }}
-                inputMode="numeric"
-                placeholder="0"
+                value={price}
+                onChange={(e)=>{ setPrice(e.target.value); if (errors.price) setErrors(prev=>({ ...prev, price: undefined })) }}
+                placeholder="e.g. 30.000/kg"
               />
             </div>
             {errors.price && <div className="text-sm text-red-600 mt-1">{errors.price}</div>}
@@ -265,6 +264,37 @@ export default function EditProductModal({ product, onClose, onSaved }:{ product
                 </div>
               </div>
             )}
+          </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-1">Short description</label>
+            <textarea value={shortDesc} onChange={(e)=>setShortDesc(e.target.value)} className="w-full border rounded px-3 py-2" rows={3} />
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-1">Table (specifications)</label>
+            <div className="space-y-2">
+              {specifications.map((spec, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <input className="flex-1 border rounded px-3 py-2" placeholder="Attribute" value={spec.attribute} onChange={(e)=>{
+                    const v = e.target.value
+                    setSpecifications(prev=> prev.map((s,i)=> i===idx ? { ...s, attribute: v } : s))
+                  }} />
+                  <input className="flex-1 border rounded px-3 py-2" placeholder="Value" value={spec.value} onChange={(e)=>{
+                    const v = e.target.value
+                    setSpecifications(prev=> prev.map((s,i)=> i===idx ? { ...s, value: v } : s))
+                  }} />
+                  <button onClick={()=> setSpecifications(prev=> prev.filter((_,i)=> i!==idx))} className="px-3 py-2 bg-destructive/10 text-destructive rounded">Remove</button>
+                </div>
+              ))}
+              <div>
+                <button type="button" onClick={()=> setSpecifications(prev=>[...prev, { attribute: '', value: '' }])} className="px-3 py-2 bg-primary text-white rounded">Add row</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-1">Contact us</label>
+            <input className="w-full border rounded px-3 py-2" value={contact} onChange={(e)=>setContact(e.target.value)} placeholder="Contact info or WhatsApp number" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Image URL</label>
